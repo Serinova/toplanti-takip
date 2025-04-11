@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}Görevler - Toplantı Takip Programı{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-tasks me-2"></i>Görevler</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('gorev.yeni') }}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-1"></i>Yeni Görev
+        </a>
+    </div>
+</div>
+
+<ul class="nav nav-tabs mb-4" id="gorev-tabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="atanan-tab" data-bs-toggle="tab" data-bs-target="#atanan" type="button" role="tab" aria-controls="atanan" aria-selected="true">
+            Bana Atanan Görevler
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="olusturulan-tab" data-bs-toggle="tab" data-bs-target="#olusturulan" type="button" role="tab" aria-controls="olusturulan" aria-selected="false">
+            Oluşturduğum Görevler
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="gorev-tabs-content">
+    <div class="tab-pane fade show active" id="atanan" role="tabpanel" aria-labelledby="atanan-tab">
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">Yapılacak</h5>
+                    </div>
+                    <div class="card-body">
+                        {% set yapilacak_gorevler = atanan_gorevler|selectattr('durum', 'equalto', 'Yapılacak')|list %}
+                        {% if yapilacak_gorevler %}
+                            <div class="list-group">
+                                {% for gorev in yapilacak_gorevler %}
+                                    <a href="{{ url_for('gorev.detay', id=gorev.id) }}" class="list-group-item list-group-item-action">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">{{ gorev.baslik }}</h6>
+                                            {% if gorev.puan_degeri > 0 %}
+                                                <span class="badge bg-info">{{ gorev.puan_degeri }} Puan</span>
+                                            {% endif %}
+                                        </div>
+                                        <p class="mb-1 text-truncate">{{ gorev.aciklama }}</p>
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar-alt me-1"></i>{{ gorev.son_teslim_tarihi.strftime('%d.%m.%Y') }}
+                                            {% if gorev.toplanti %}
+                                                <i class="fas fa-calendar-check ms-2 me-1"></i>{{ gorev.toplanti.baslik }}
+                                            {% endif %}
+                                        </small>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info mb-0">
+                                Yapılacak görev bulunmamaktadır.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-header bg-warning text-white">
+                        <h5 class="card-title mb-0">Devam Ediyor</h5>
+                    </div>
+                    <div class="card-body">
+                        {% set devam_eden_gorevler = atanan_gorevler|selectattr('durum', 'equalto', 'Devam Ediyor')|list %}
+                        {% if devam_eden_gorevler %}
+                            <div class="list-group">
+                                {% for gorev in devam_eden_gorevler %}
+                                    <a href="{{ url_for('gorev.detay', id=gorev.id) }}" class="list-group-item list-group-item-action">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">{{ gorev.baslik }}</h6>
+                                            {% if gorev.puan_degeri > 0 %}
+                                                <span class="badge bg-info">{{ gorev.puan_degeri }} Puan</span>
+                                            {% endif %}
+                                        </div>
+                                        <p class="mb-1 text-truncate">{{ gorev.aciklama }}</p>
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar-alt me-1"></i>{{ gorev.son_teslim_tarihi.strftime('%d.%m.%Y') }}
+                                            {% if gorev.toplanti %}
+                                                <i class="fas fa-calendar-check ms-2 me-1"></i>{{ gorev.toplanti.baslik }}
+                                            {% endif %}
+                                        </small>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info mb-0">
+                                Devam eden görev bulunmamaktadır.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="card-title mb-0">Tamamlandı</h5>
+                    </div>
+                    <div class="card-body">
+                        {% set tamamlanan_gorevler = atanan_gorevler|selectattr('durum', 'equalto', 'Tamamlandı')|list %}
+                        {% if tamamlanan_gorevler %}
+                            <div class="list-group">
+                                {% for gorev in tamamlanan_gorevler %}
+                                    <a href="{{ url_for('gorev.detay', id=gorev.id) }}" class="list-group-item list-group-item-action">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">{{ gorev.baslik }}</h6>
+                                            {% if gorev.puan_degeri > 0 %}
+                                                <span class="badge bg-info">{{ gorev.puan_degeri }} Puan</span>
+                                            {% endif %}
+                                        </div>
+                                        <p class="mb-1 text-truncate">{{ gorev.aciklama }}</p>
+                                        <small class="text-muted">
+                                            <i class="fas fa-check-circle me-1"></i>{{ gorev.tamamlanma_zamani.strftime('%d.%m.%Y') }}
+                                            {% if gorev.toplanti %}
+                                                <i class="fas fa-calendar-check ms-2 me-1"></i>{{ gorev.toplanti.baslik }}
+                                            {% endif %}
+                                        </small>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info mb-0">
+                                Tamamlanan görev bulunmamaktadır.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tab-pane fade" id="olusturulan" role="tabpanel" aria-labelledby="olusturulan-tab">
+        {% if olusturulan_gorevler %}
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Başlık</th>
+                                    <th>Atanan Kişi</th>
+                                    <th>Son Tarih</th>
+                                    <th>Durum</th>
+                                    <th>Toplantı</th>
+                                    <th>Puan</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for gorev in olusturulan_gorevler %}
+                                    <tr>
+                                        <td>{{ gorev.baslik }}</td>
+                                        <td>{{ gorev.atanan_kullanici.ad }}</td>
+                                        <td>{{ gorev.son_teslim_tarihi.strftime('%d.%m.%Y') }}</td>
+                                        <td>
+                                            <span class="badge {% if gorev.durum == 'Tamamlandı' %}bg-success{% elif gorev.durum == 'Devam Ediyor' %}bg-warning{% else %}bg-primary{% endif %}">
+                                                {{ gorev.durum }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if gorev.toplanti %}
+                                                <a href="{{ url_for('toplanti.detay', id=gorev.toplanti.id) }}" class="text-decoration-none">
+                                                    {{ gorev.toplanti.baslik }}
+                                                </a>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if gorev.puan_degeri > 0 %}
+                                                <span class="badge bg-info">{{ gorev.puan_degeri }}</span>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ url_for('gorev.detay', id=gorev.id) }}" class="btn btn-sm btn-outline-primary" title="Görüntüle">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ url_for('gorev.duzenle', id=gorev.id) }}" class="btn btn-sm btn-outline-secondary" title="Düzenle">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>Henüz oluşturduğunuz bir görev bulunmamaktadır.
+            </div>
+            <div class="text-center mt-3">
+                <a href="{{ url_for('gorev.yeni') }}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-1"></i>Yeni Görev Oluştur
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Görev tablarını etkinleştir
+        var gorev_tabs = document.querySelectorAll('#gorev-tabs button');
+        gorev_tabs.forEach(function(tab) {
+            tab.addEventListener('click', function(event) {
+                event.preventDefault();
+                var tabTarget = this.getAttribute('data-bs-target');
+                
+                // Tüm tabları ve içeriklerini gizle
+                document.querySelectorAll('#gorev-tabs button').forEach(function(t) {
+                    t.classList.remove('active');
+                    t.setAttribute('aria-selected', 'false');
+                });
+                document.querySelectorAll('#gorev-tabs-content .tab-pane').forEach(function(p) {
+                    p.classList.remove('show', 'active');
+                });
+                
+                // Seçilen tabı ve içeriğini göster
+                this.classList.add('active');
+                this.setAttribute('aria-selected', 'true');
+                document.querySelector(tabTarget).classList.add('show', 'active');
+            });
+        });
+    });
+</script>
+{% endblock %}

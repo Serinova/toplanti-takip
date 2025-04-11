@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Ürünler - Toplantı Takip Programı{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-box me-2"></i>Ürünler</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('urun.yeni') }}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-1"></i>Yeni Ürün
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Filtreler</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('urun.liste') }}" method="GET">
+                    <div class="mb-3">
+                        <label for="kategori" class="form-label">Kategori</label>
+                        <select class="form-select" id="kategori" name="kategori">
+                            <option value="">Tümü</option>
+                            {% for kategori in kategoriler %}
+                                <option value="{{ kategori.id }}" {% if request.args.get('kategori') == kategori.id|string %}selected{% endif %}>
+                                    {{ kategori.ad }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="durum" class="form-label">Durum</label>
+                        <select class="form-select" id="durum" name="durum">
+                            <option value="">Tümü</option>
+                            <option value="Aktif" {% if request.args.get('durum') == 'Aktif' %}selected{% endif %}>Aktif</option>
+                            <option value="Pasif" {% if request.args.get('durum') == 'Pasif' %}selected{% endif %}>Pasif</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="arama" class="form-label">Arama</label>
+                        <input type="text" class="form-control" id="arama" name="arama" placeholder="Ürün adı veya kodu" value="{{ request.args.get('arama', '') }}">
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Filtrele</button>
+                        <a href="{{ url_for('urun.liste') }}" class="btn btn-outline-secondary">Filtreleri Temizle</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Ürün Listesi</h5>
+            </div>
+            <div class="card-body">
+                {% if urunler %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Ürün Kodu</th>
+                                    <th>Ürün Adı</th>
+                                    <th>Kategori</th>
+                                    <th>Fiyat</th>
+                                    <th>Stok</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for urun in urunler %}
+                                    <tr>
+                                        <td>{{ urun.kod }}</td>
+                                        <td>{{ urun.ad }}</td>
+                                        <td>{{ urun.kategori.ad }}</td>
+                                        <td>{{ urun.fiyat }} TL</td>
+                                        <td>{{ urun.stok_miktari }}</td>
+                                        <td>
+                                            <span class="badge {% if urun.durum == 'Aktif' %}bg-success{% else %}bg-secondary{% endif %}">
+                                                {{ urun.durum }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ url_for('urun.detay', id=urun.id) }}" class="btn btn-sm btn-outline-primary" title="Görüntüle">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ url_for('urun.duzenle', id=urun.id) }}" class="btn btn-sm btn-outline-secondary" title="Düzenle">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Sayfalama -->
+                    {% if sayfa_sayisi > 1 %}
+                        <nav aria-label="Sayfalama">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item {% if sayfa == 1 %}disabled{% endif %}">
+                                    <a class="page-link" href="{{ url_for('urun.liste', sayfa=sayfa-1, **request.args) }}" tabindex="-1" aria-disabled="true">Önceki</a>
+                                </li>
+                                {% for i in range(1, sayfa_sayisi + 1) %}
+                                    <li class="page-item {% if i == sayfa %}active{% endif %}">
+                                        <a class="page-link" href="{{ url_for('urun.liste', sayfa=i, **request.args) }}">{{ i }}</a>
+                                    </li>
+                                {% endfor %}
+                                <li class="page-item {% if sayfa == sayfa_sayisi %}disabled{% endif %}">
+                                    <a class="page-link" href="{{ url_for('urun.liste', sayfa=sayfa+1, **request.args) }}">Sonraki</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    {% endif %}
+                {% else %}
+                    <div class="alert alert-info mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Arama kriterlerinize uygun ürün bulunamadı.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

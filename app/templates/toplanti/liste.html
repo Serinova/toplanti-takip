@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Toplantılar - Toplantı Takip Programı{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-calendar-alt me-2"></i>Toplantılar</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('toplanti.yeni') }}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-1"></i>Yeni Toplantı
+        </a>
+    </div>
+</div>
+
+<ul class="nav nav-tabs mb-4" id="toplanti-tabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="olusturulan-tab" data-bs-toggle="tab" data-bs-target="#olusturulan" type="button" role="tab" aria-controls="olusturulan" aria-selected="true">
+            Oluşturduğum Toplantılar
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="katilimci-tab" data-bs-toggle="tab" data-bs-target="#katilimci" type="button" role="tab" aria-controls="katilimci" aria-selected="false">
+            Katılımcı Olduğum Toplantılar
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="toplanti-tabs-content">
+    <div class="tab-pane fade show active" id="olusturulan" role="tabpanel" aria-labelledby="olusturulan-tab">
+        {% if olusturulan_toplantilar %}
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Başlık</th>
+                                    <th>Tarih</th>
+                                    <th>Saat</th>
+                                    <th>Konum</th>
+                                    <th>Katılımcı Sayısı</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for toplanti in olusturulan_toplantilar %}
+                                    <tr>
+                                        <td>{{ toplanti.baslik }}</td>
+                                        <td>{{ toplanti.baslangic_zamani.strftime('%d.%m.%Y') }}</td>
+                                        <td>{{ toplanti.baslangic_zamani.strftime('%H:%M') }} - {{ toplanti.bitis_zamani.strftime('%H:%M') }}</td>
+                                        <td>{{ toplanti.konum }}</td>
+                                        <td>{{ toplanti.katilimcilar|length }}</td>
+                                        <td>
+                                            {% if toplanti.iptal_edildi %}
+                                                <span class="badge bg-danger">İptal Edildi</span>
+                                            {% elif toplanti.baslangic_zamani > now %}
+                                                <span class="badge bg-primary">Planlandı</span>
+                                            {% elif toplanti.bitis_zamani < now %}
+                                                <span class="badge bg-success">Tamamlandı</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">Devam Ediyor</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ url_for('toplanti.detay', id=toplanti.id) }}" class="btn btn-sm btn-outline-primary" title="Görüntüle">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ url_for('toplanti.duzenle', id=toplanti.id) }}" class="btn btn-sm btn-outline-secondary" title="Düzenle">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                {% if not toplanti.iptal_edildi and toplanti.baslangic_zamani > now %}
+                                                    <button type="button" class="btn btn-sm btn-outline-danger" title="İptal Et" data-bs-toggle="modal" data-bs-target="#iptalModal{{ toplanti.id }}">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <!-- İptal Onay Modalı -->
+                                            <div class="modal fade" id="iptalModal{{ toplanti.id }}" tabindex="-1" aria-labelledby="iptalModalLabel{{ toplanti.id }}" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="iptalModalLabel{{ toplanti.id }}">Toplantı İptal Onayı</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <p>"{{ toplanti.baslik }}" başlıklı toplantıyı iptal etmek istediğinize emin misiniz?</p>
+                                                            <p class="text-danger">Bu işlem geri alınamaz ve tüm katılımcılara bildirim gönderilecektir.</p>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                                                            <form action="{{ url_for('toplanti.iptal', id=toplanti.id) }}" method="POST">
+                                                                <button type="submit" class="btn btn-danger">Toplantıyı İptal Et</button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>Henüz oluşturduğunuz bir toplantı bulunmamaktadır.
+            </div>
+            <div class="text-center mt-3">
+                <a href="{{ url_for('toplanti.yeni') }}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-1"></i>Yeni Toplantı Oluştur
+                </a>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="tab-pane fade" id="katilimci" role="tabpanel" aria-labelledby="katilimci-tab">
+        {% if katilimci_toplantilar %}
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Başlık</th>
+                                    <th>Tarih</th>
+                                    <th>Saat</th>
+                                    <th>Konum</th>
+                                    <th>Oluşturan</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for toplanti in katilimci_toplantilar %}
+                                    <tr>
+                                        <td>{{ toplanti.baslik }}</td>
+                                        <td>{{ toplanti.baslangic_zamani.strftime('%d.%m.%Y') }}</td>
+                                        <td>{{ toplanti.baslangic_zamani.strftime('%H:%M') }} - {{ toplanti.bitis_zamani.strftime('%H:%M') }}</td>
+                                        <td>{{ toplanti.konum }}</td>
+                                        <td>{{ toplanti.olusturan.ad }}</td>
+                                        <td>
+                                            {% if toplanti.iptal_edildi %}
+                                                <span class="badge bg-danger">İptal Edildi</span>
+                                            {% elif toplanti.baslangic_zamani > now %}
+                                                <span class="badge bg-primary">Planlandı</span>
+                                            {% elif toplanti.bitis_zamani < now %}
+                                                <span class="badge bg-success">Tamamlandı</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">Devam Ediyor</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('toplanti.detay', id=toplanti.id) }}" class="btn btn-sm btn-outline-primary" title="Görüntüle">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>Henüz katılımcı olduğunuz bir toplantı bulunmamaktadır.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toplantı tablarını etkinleştir
+        var toplanti_tabs = document.querySelectorAll('#toplanti-tabs button');
+        toplanti_tabs.forEach(function(tab) {
+            tab.addEventListener('click', function(event) {
+                event.preventDefault();
+                var tabTarget = this.getAttribute('data-bs-target');
+                
+                // Tüm tabları ve içeriklerini gizle
+                document.querySelectorAll('#toplanti-tabs button').forEach(function(t) {
+                    t.classList.remove('active');
+                    t.setAttribute('aria-selected', 'false');
+                });
+                document.querySelectorAll('#toplanti-tabs-content .tab-pane').forEach(function(p) {
+                    p.classList.remove('show', 'active');
+                });
+                
+                // Seçilen tabı ve içeriğini göster
+                this.classList.add('active');
+                this.setAttribute('aria-selected', 'true');
+                document.querySelector(tabTarget).classList.add('show', 'active');
+            });
+        });
+    });
+</script>
+{% endblock %}

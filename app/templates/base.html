@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Toplantı Takip Programı{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    {% block styles %}{% endblock %}
+</head>
+<body class="{% if current_user.is_authenticated %}bg-light{% else %}bg-white{% endif %}">
+    {% if current_user.is_authenticated %}
+        <header class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="{{ url_for('dashboard.index') }}">
+                    <i class="fas fa-calendar-check me-2"></i>Toplantı Takip
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}" href="{{ url_for('dashboard.index') }}">
+                                <i class="fas fa-tachometer-alt me-1"></i>Gösterge Paneli
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint.startswith('toplanti.') %}active{% endif %}" href="{{ url_for('toplanti.liste') }}">
+                                <i class="fas fa-calendar-alt me-1"></i>Toplantılar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint.startswith('gorev.') %}active{% endif %}" href="{{ url_for('gorev.liste') }}">
+                                <i class="fas fa-tasks me-1"></i>Görevler
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint.startswith('bildirim.') %}active{% endif %}" href="{{ url_for('bildirim.liste') }}">
+                                <i class="fas fa-bell me-1"></i>Bildirimler
+                                {% set bildirim_sayisi = get_okunmamis_bildirim_sayisi(current_user.id) %}
+                                {% if bildirim_sayisi > 0 %}
+                                    <span class="badge bg-danger">{{ bildirim_sayisi }}</span>
+                                {% endif %}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint.startswith('urun.') %}active{% endif %}" href="{{ url_for('urun.liste') }}">
+                                <i class="fas fa-box me-1"></i>Ürünler
+                            </a>
+                        </li>
+                        {% if current_user.rol == 'admin' %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint.startswith('rapor.') %}active{% endif %}" href="{{ url_for('rapor.dashboard') }}">
+                                    <i class="fas fa-chart-bar me-1"></i>Raporlar
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                    <ul class="navbar-nav">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="{{ current_user.profil_resmi_url }}" alt="{{ current_user.ad }}" class="rounded-circle me-1" width="24" height="24">
+                                {{ current_user.ad }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="{{ url_for('kullanici.profil') }}"><i class="fas fa-user me-2"></i>Profil</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('kullanici.ayarlar') }}"><i class="fas fa-cog me-2"></i>Ayarlar</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt me-2"></i>Çıkış</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <div class="container-fluid mt-5 pt-3">
+            <div class="row">
+                <div class="col-md-3 col-lg-2 d-md-block bg-white sidebar collapse" id="sidebarMenu">
+                    <div class="position-sticky pt-3">
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}" href="{{ url_for('dashboard.index') }}">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Gösterge Paneli
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint.startswith('toplanti.') %}active{% endif %}" href="{{ url_for('toplanti.liste') }}">
+                                    <i class="fas fa-calendar-alt me-2"></i>Toplantılar
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint.startswith('gorev.') %}active{% endif %}" href="{{ url_for('gorev.liste') }}">
+                                    <i class="fas fa-tasks me-2"></i>Görevler
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint.startswith('bildirim.') %}active{% endif %}" href="{{ url_for('bildirim.liste') }}">
+                                    <i class="fas fa-bell me-2"></i>Bildirimler
+                                    {% set bildirim_sayisi = get_okunmamis_bildirim_sayisi(current_user.id) %}
+                                    {% if bildirim_sayisi > 0 %}
+                                        <span class="badge bg-danger">{{ bildirim_sayisi }}</span>
+                                    {% endif %}
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint.startswith('urun.') %}active{% endif %}" href="{{ url_for('urun.liste') }}">
+                                    <i class="fas fa-box me-2"></i>Ürünler
+                                </a>
+                            </li>
+                            {% if current_user.rol == 'admin' %}
+                                <li class="nav-item">
+                                    <a class="nav-link {% if request.endpoint.startswith('rapor.') %}active{% endif %}" href="{{ url_for('rapor.dashboard') }}">
+                                        <i class="fas fa-chart-bar me-2"></i>Raporlar
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+
+                        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                            <span>Hızlı Erişim</span>
+                        </h6>
+                        <ul class="nav flex-column mb-2">
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('toplanti.yeni') }}">
+                                    <i class="fas fa-plus-circle me-2"></i>Yeni Toplantı
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('gorev.yeni') }}">
+                                    <i class="fas fa-plus-circle me-2"></i>Yeni Görev
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible fade show mt-3" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    {% block content %}{% endblock %}
+                </main>
+            </div>
+        </div>
+    {% else %}
+        <div class="container mt-5">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% block auth_content %}{% endblock %}
+        </div>
+    {% endif %}
+
+    <footer class="footer mt-auto py-3 bg-light">
+        <div class="container text-center">
+            <span class="text-muted">© {{ now.year }} Toplantı Takip Programı</span>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

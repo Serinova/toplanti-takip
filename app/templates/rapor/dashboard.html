@@ -1,0 +1,430 @@
+{% extends "base.html" %}
+
+{% block title %}Raporlar - Toplantı Takip Programı{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-chart-bar me-2"></i>Raporlar</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="btnExportPDF">
+                <i class="fas fa-file-pdf me-1"></i>PDF
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="btnExportExcel">
+                <i class="fas fa-file-excel me-1"></i>Excel
+            </button>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-calendar me-1"></i>Tarih Aralığı
+        </button>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{{ url_for('rapor.dashboard', period='week') }}">Bu Hafta</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('rapor.dashboard', period='month') }}">Bu Ay</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('rapor.dashboard', period='quarter') }}">Bu Çeyrek</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('rapor.dashboard', period='year') }}">Bu Yıl</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#customDateModal">Özel Tarih Aralığı</a></li>
+        </ul>
+    </div>
+</div>
+
+<!-- Özel Tarih Aralığı Modalı -->
+<div class="modal fade" id="customDateModal" tabindex="-1" aria-labelledby="customDateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="customDateModalLabel">Özel Tarih Aralığı Seçin</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('rapor.dashboard') }}" method="GET">
+                    <div class="mb-3">
+                        <label for="start_date" class="form-label">Başlangıç Tarihi</label>
+                        <input type="date" class="form-control" id="start_date" name="start_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="end_date" class="form-label">Bitiş Tarihi</label>
+                        <input type="date" class="form-control" id="end_date" name="end_date" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Uygula</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3 mb-4">
+        <div class="card border-primary h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-muted mb-0">Toplam Toplantı</h6>
+                        <h2 class="mt-2 mb-0">{{ toplanti_sayisi }}</h2>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 p-3 rounded">
+                        <i class="fas fa-calendar-alt text-primary fa-2x"></i>
+                    </div>
+                </div>
+                <p class="card-text mt-3">
+                    <span class="{% if toplanti_degisim > 0 %}text-success{% elif toplanti_degisim < 0 %}text-danger{% else %}text-muted{% endif %}">
+                        {% if toplanti_degisim > 0 %}
+                            <i class="fas fa-arrow-up me-1"></i>
+                        {% elif toplanti_degisim < 0 %}
+                            <i class="fas fa-arrow-down me-1"></i>
+                        {% else %}
+                            <i class="fas fa-minus me-1"></i>
+                        {% endif %}
+                        {{ toplanti_degisim|abs }}% 
+                    </span>
+                    önceki döneme göre
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card border-success h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-muted mb-0">Tamamlanan Görev</h6>
+                        <h2 class="mt-2 mb-0">{{ tamamlanan_gorev_sayisi }}</h2>
+                    </div>
+                    <div class="bg-success bg-opacity-10 p-3 rounded">
+                        <i class="fas fa-tasks text-success fa-2x"></i>
+                    </div>
+                </div>
+                <p class="card-text mt-3">
+                    <span class="{% if gorev_degisim > 0 %}text-success{% elif gorev_degisim < 0 %}text-danger{% else %}text-muted{% endif %}">
+                        {% if gorev_degisim > 0 %}
+                            <i class="fas fa-arrow-up me-1"></i>
+                        {% elif gorev_degisim < 0 %}
+                            <i class="fas fa-arrow-down me-1"></i>
+                        {% else %}
+                            <i class="fas fa-minus me-1"></i>
+                        {% endif %}
+                        {{ gorev_degisim|abs }}% 
+                    </span>
+                    önceki döneme göre
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card border-info h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-muted mb-0">Ortalama Katılımcı</h6>
+                        <h2 class="mt-2 mb-0">{{ ortalama_katilimci }}</h2>
+                    </div>
+                    <div class="bg-info bg-opacity-10 p-3 rounded">
+                        <i class="fas fa-users text-info fa-2x"></i>
+                    </div>
+                </div>
+                <p class="card-text mt-3">
+                    <span class="{% if katilimci_degisim > 0 %}text-success{% elif katilimci_degisim < 0 %}text-danger{% else %}text-muted{% endif %}">
+                        {% if katilimci_degisim > 0 %}
+                            <i class="fas fa-arrow-up me-1"></i>
+                        {% elif katilimci_degisim < 0 %}
+                            <i class="fas fa-arrow-down me-1"></i>
+                        {% else %}
+                            <i class="fas fa-minus me-1"></i>
+                        {% endif %}
+                        {{ katilimci_degisim|abs }}% 
+                    </span>
+                    önceki döneme göre
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card border-warning h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-muted mb-0">Toplam Puan</h6>
+                        <h2 class="mt-2 mb-0">{{ toplam_puan }}</h2>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 p-3 rounded">
+                        <i class="fas fa-star text-warning fa-2x"></i>
+                    </div>
+                </div>
+                <p class="card-text mt-3">
+                    <span class="{% if puan_degisim > 0 %}text-success{% elif puan_degisim < 0 %}text-danger{% else %}text-muted{% endif %}">
+                        {% if puan_degisim > 0 %}
+                            <i class="fas fa-arrow-up me-1"></i>
+                        {% elif puan_degisim < 0 %}
+                            <i class="fas fa-arrow-down me-1"></i>
+                        {% else %}
+                            <i class="fas fa-minus me-1"></i>
+                        {% endif %}
+                        {{ puan_degisim|abs }}% 
+                    </span>
+                    önceki döneme göre
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-lg-8 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Toplantı ve Görev Trendi</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="trendChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Toplantı Dağılımı</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="meetingDistributionChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">En Aktif Kullanıcılar</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Kullanıcı</th>
+                                <th>Toplantı</th>
+                                <th>Görev</th>
+                                <th>Puan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for kullanici in aktif_kullanicilar %}
+                                <tr>
+                                    <td>{{ kullanici.ad }}</td>
+                                    <td>{{ kullanici.toplanti_sayisi }}</td>
+                                    <td>{{ kullanici.gorev_sayisi }}</td>
+                                    <td>{{ kullanici.toplam_puan }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Görev Tamamlama Oranları</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="taskCompletionChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Son Toplantılar</h5>
+            </div>
+            <div class="card-body">
+                {% if son_toplantilar %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Başlık</th>
+                                    <th>Tarih</th>
+                                    <th>Katılımcı Sayısı</th>
+                                    <th>Gündem Maddesi</th>
+                                    <th>Görev Sayısı</th>
+                                    <th>Durum</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for toplanti in son_toplantilar %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ url_for('toplanti.detay', id=toplanti.id) }}" class="text-decoration-none">
+                                                {{ toplanti.baslik }}
+                                            </a>
+                                        </td>
+                                        <td>{{ toplanti.baslangic_zamani.strftime('%d.%m.%Y %H:%M') }}</td>
+                                        <td>{{ toplanti.katilimci_sayisi }}</td>
+                                        <td>{{ toplanti.gundem_sayisi }}</td>
+                                        <td>{{ toplanti.gorev_sayisi }}</td>
+                                        <td>
+                                            <span class="badge {% if toplanti.iptal_edildi %}bg-danger{% elif toplanti.baslangic_zamani > now %}bg-primary{% elif toplanti.bitis_zamani < now %}bg-success{% else %}bg-warning{% endif %}">
+                                                {% if toplanti.iptal_edildi %}
+                                                    İptal Edildi
+                                                {% elif toplanti.baslangic_zamani > now %}
+                                                    Planlandı
+                                                {% elif toplanti.bitis_zamani < now %}
+                                                    Tamamlandı
+                                                {% else %}
+                                                    Devam Ediyor
+                                                {% endif %}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info mb-0">
+                        Seçilen tarih aralığında toplantı bulunmamaktadır.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Trend grafiği
+        var trendCtx = document.getElementById('trendChart').getContext('2d');
+        var trendChart = new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: {{ trend_labels|tojson }},
+                datasets: [
+                    {
+                        label: 'Toplantılar',
+                        data: {{ toplanti_trend|tojson }},
+                        borderColor: 'rgba(13, 110, 253, 1)',
+                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Görevler',
+                        data: {{ gorev_trend|tojson }},
+                        borderColor: 'rgba(25, 135, 84, 1)',
+                        backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // Toplantı dağılımı grafiği
+        var distributionCtx = document.getElementById('meetingDistributionChart').getContext('2d');
+        var distributionChart = new Chart(distributionCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Tamamlanan', 'Planlanan', 'İptal Edilen'],
+                datasets: [{
+                    data: [{{ tamamlanan_toplanti_sayisi }}, {{ planlanan_toplanti_sayisi }}, {{ iptal_edilen_toplanti_sayisi }}],
+                    backgroundColor: [
+                        'rgba(25, 135, 84, 0.7)',
+                        'rgba(13, 110, 253, 0.7)',
+                        'rgba(220, 53, 69, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(25, 135, 84, 1)',
+                        'rgba(13, 110, 253, 1)',
+                        'rgba(220, 53, 69, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+        
+        // Görev tamamlama oranları grafiği
+        var taskCompletionCtx = document.getElementById('taskCompletionChart').getContext('2d');
+        var taskCompletionChart = new Chart(taskCompletionCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ kullanici_isimleri|tojson }},
+                datasets: [{
+                    label: 'Tamamlanan Görevler',
+                    data: {{ tamamlanan_gorevler|tojson }},
+                    backgroundColor: 'rgba(25, 135, 84, 0.7)',
+                    borderColor: 'rgba(25, 135, 84, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Toplam Görevler',
+                    data: {{ toplam_gorevler|tojson }},
+                    backgroundColor: 'rgba(13, 110, 253, 0.7)',
+                    borderColor: 'rgba(13, 110, 253, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // PDF ve Excel dışa aktarma
+        document.getElementById('btnExportPDF').addEventListener('click', function() {
+            window.location.href = "{{ url_for('rapor.export_pdf') }}?" + new URLSearchParams(window.location.search).toString();
+        });
+        
+        document.getElementById('btnExportExcel').addEventListener('click', function() {
+            window.location.href = "{{ url_for('rapor.export_excel') }}?" + new URLSearchParams(window.location.search).toString();
+        });
+    });
+</script>
+{% endblock %}

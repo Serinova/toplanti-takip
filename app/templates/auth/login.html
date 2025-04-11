@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Giriş - Toplantı Takip Programı{% endblock %}
+
+{% block auth_content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white text-center">
+                <h4 class="my-0"><i class="fas fa-sign-in-alt me-2"></i>Giriş</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('auth.login') }}">
+                    {{ form.csrf_token }}
+                    <div class="mb-3">
+                        <label for="eposta" class="form-label">E-posta Adresi</label>
+                        {{ form.eposta(class="form-control", placeholder="E-posta adresinizi girin") }}
+                        {% if form.eposta.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.eposta.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="sifre" class="form-label">Şifre</label>
+                        {{ form.sifre(class="form-control", placeholder="Şifrenizi girin") }}
+                        {% if form.sifre.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.sifre.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3 form-check">
+                        {{ form.beni_hatirla(class="form-check-input") }}
+                        <label class="form-check-label" for="beni_hatirla">Beni hatırla</label>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Giriş Yap</button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                <div class="mb-2">
+                    <a href="{{ url_for('auth.forgot_password') }}" class="text-decoration-none">Şifremi Unuttum</a>
+                </div>
+                <div>
+                    Hesabınız yok mu? <a href="{{ url_for('auth.register') }}" class="text-decoration-none">Kayıt Ol</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

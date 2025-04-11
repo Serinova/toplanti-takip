@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}Gösterge Paneli - Toplantı Takip Programı{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-tachometer-alt me-2"></i>Gösterge Paneli</h1>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6 col-lg-3 mb-3">
+        <div class="card h-100 border-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-muted mb-0">Yaklaşan Toplantılar</h6>
+                        <h2 class="mt-2 mb-0">{{ yaklasan_toplantilar|length }}</h2>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 p-3 rounded">
+                        <i class="fas fa-calendar-alt text-primary fa-2x"></i>
+                    </div>
+                </div>
+                <p class="card-text mt-3">
+                    <a href="{{ url_for('toplanti.liste') }}" class="text-decoration-none">Tüm toplantıları görüntüle</a>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-3">
+        <div class="card h-100 border-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-muted mb-0">Bekleyen Görevler</h6>
+                        <h2 class="mt-2 mb-0">{{ bekleyen_gorevler|length }}</h2>
+                    </div>
+                    <div class="bg-success bg-opacity-10 p-3 rounded">
+                        <i class="fas fa-tasks text-success fa-2x"></i>
+                    </div>
+                </div>
+                <p class="card-text mt-3">
+                    <a href="{{ url_for('gorev.liste') }}" class="text-decoration-none">Tüm görevleri görüntüle</a>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-3">
+        <div class="card h-100 border-danger">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-muted mb-0">Okunmamış Bildirimler</h6>
+                        <h2 class="mt-2 mb-0">{{ okunmamis_bildirimler|length }}</h2>
+                    </div>
+                    <div class="bg-danger bg-opacity-10 p-3 rounded">
+                        <i class="fas fa-bell text-danger fa-2x"></i>
+                    </div>
+                </div>
+                <p class="card-text mt-3">
+                    <a href="{{ url_for('bildirim.liste') }}" class="text-decoration-none">Tüm bildirimleri görüntüle</a>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-3">
+        <div class="card h-100 border-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-muted mb-0">Toplam Puanınız</h6>
+                        <h2 class="mt-2 mb-0">{{ toplam_puan }}</h2>
+                    </div>
+                    <div class="bg-info bg-opacity-10 p-3 rounded">
+                        <i class="fas fa-star text-info fa-2x"></i>
+                    </div>
+                </div>
+                <p class="card-text mt-3">
+                    <a href="{{ url_for('kullanici.puanlar') }}" class="text-decoration-none">Puan geçmişini görüntüle</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Yaklaşan Toplantılar</h5>
+            </div>
+            <div class="card-body">
+                {% if yaklasan_toplantilar %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Başlık</th>
+                                    <th>Tarih</th>
+                                    <th>Saat</th>
+                                    <th>Konum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for toplanti in yaklasan_toplantilar %}
+                                    <tr>
+                                        <td>{{ toplanti.baslik }}</td>
+                                        <td>{{ toplanti.baslangic_zamani.strftime('%d.%m.%Y') }}</td>
+                                        <td>{{ toplanti.baslangic_zamani.strftime('%H:%M') }} - {{ toplanti.bitis_zamani.strftime('%H:%M') }}</td>
+                                        <td>{{ toplanti.konum }}</td>
+                                        <td>
+                                            <a href="{{ url_for('toplanti.detay', id=toplanti.id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info mb-0">
+                        Yaklaşan toplantı bulunmamaktadır.
+                    </div>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-white">
+                <a href="{{ url_for('toplanti.yeni') }}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-1"></i>Yeni Toplantı Oluştur
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Bekleyen Görevler</h5>
+            </div>
+            <div class="card-body">
+                {% if bekleyen_gorevler %}
+                    <ul class="list-group list-group-flush">
+                        {% for gorev in bekleyen_gorevler %}
+                            <li class="list-group-item px-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">{{ gorev.baslik }}</h6>
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar-alt me-1"></i>Son Tarih: {{ gorev.son_teslim_tarihi.strftime('%d.%m.%Y') }}
+                                        </small>
+                                    </div>
+                                    <a href="{{ url_for('gorev.detay', id=gorev.id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="alert alert-info mb-0">
+                        Bekleyen görev bulunmamaktadır.
+                    </div>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-white">
+                <a href="{{ url_for('gorev.yeni') }}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-1"></i>Yeni Görev Oluştur
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Son Bildirimler</h5>
+            </div>
+            <div class="card-body">
+                {% if son_bildirimler %}
+                    <ul class="list-group list-group-flush">
+                        {% for bildirim in son_bildirimler %}
+                            <li class="list-group-item px-0 {% if not bildirim.okundu %}bg-light{% endif %}">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">
+                                            {% if not bildirim.okundu %}
+                                                <span class="badge bg-danger me-1">Yeni</span>
+                                            {% endif %}
+                                            {{ bildirim.mesaj }}
+                                        </h6>
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>{{ bildirim.olusturulma_zamani.strftime('%d.%m.%Y %H:%M') }}
+                                        </small>
+                                    </div>
+                                    {% if not bildirim.okundu %}
+                                        <a href="{{ url_for('bildirim.okundu_isaretle', id=bildirim.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-check"></i>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="alert alert-info mb-0">
+                        Bildirim bulunmamaktadır.
+                    </div>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-white">
+                <a href="{{ url_for('bildirim.liste') }}" class="btn btn-primary">
+                    <i class="fas fa-bell me-1"></i>Tüm Bildirimleri Görüntüle
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

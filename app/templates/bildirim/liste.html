@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Bildirimler - Toplantı Takip Programı{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-bell me-2"></i>Bildirimler</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{{ url_for('bildirim.ayarlar') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-cog me-1"></i>Bildirim Ayarları
+            </a>
+        </div>
+        <a href="{{ url_for('bildirim.tumu_okundu') }}" class="btn btn-sm btn-primary">
+            <i class="fas fa-check-double me-1"></i>Tümünü Okundu İşaretle
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if bildirimler %}
+            <div class="list-group">
+                {% for bildirim in bildirimler %}
+                    <div class="list-group-item list-group-item-action {% if not bildirim.okundu %}bg-light{% endif %}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">
+                                    {% if not bildirim.okundu %}
+                                        <span class="badge bg-danger me-1">Yeni</span>
+                                    {% endif %}
+                                    {{ bildirim.mesaj }}
+                                </h6>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>{{ bildirim.olusturulma_zamani.strftime('%d.%m.%Y %H:%M') }}
+                                </small>
+                            </div>
+                            <div class="d-flex">
+                                {% if bildirim.toplanti_id %}
+                                    <a href="{{ url_for('toplanti.detay', id=bildirim.toplanti_id) }}" class="btn btn-sm btn-outline-primary me-1" title="Toplantıyı Görüntüle">
+                                        <i class="fas fa-calendar-alt"></i>
+                                    </a>
+                                {% endif %}
+                                {% if bildirim.gorev_id %}
+                                    <a href="{{ url_for('gorev.detay', id=bildirim.gorev_id) }}" class="btn btn-sm btn-outline-primary me-1" title="Görevi Görüntüle">
+                                        <i class="fas fa-tasks"></i>
+                                    </a>
+                                {% endif %}
+                                {% if not bildirim.okundu %}
+                                    <a href="{{ url_for('bildirim.okundu_isaretle', id=bildirim.id) }}" class="btn btn-sm btn-outline-success" title="Okundu İşaretle">
+                                        <i class="fas fa-check"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info mb-0">
+                <i class="fas fa-info-circle me-2"></i>Bildirim bulunmamaktadır.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

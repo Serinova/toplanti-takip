@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Kayıt - Toplantı Takip Programı{% endblock %}
+
+{% block auth_content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white text-center">
+                <h4 class="my-0"><i class="fas fa-user-plus me-2"></i>Kayıt Ol</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('auth.register') }}">
+                    {{ form.csrf_token }}
+                    <div class="mb-3">
+                        <label for="ad" class="form-label">Ad Soyad</label>
+                        {{ form.ad(class="form-control", placeholder="Adınızı ve soyadınızı girin") }}
+                        {% if form.ad.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.ad.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="eposta" class="form-label">E-posta Adresi</label>
+                        {{ form.eposta(class="form-control", placeholder="E-posta adresinizi girin") }}
+                        {% if form.eposta.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.eposta.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="sifre" class="form-label">Şifre</label>
+                        {{ form.sifre(class="form-control", placeholder="Şifrenizi girin") }}
+                        {% if form.sifre.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.sifre.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="sifre_tekrar" class="form-label">Şifre Tekrar</label>
+                        {{ form.sifre_tekrar(class="form-control", placeholder="Şifrenizi tekrar girin") }}
+                        {% if form.sifre_tekrar.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.sifre_tekrar.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Kayıt Ol</button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                <div>
+                    Zaten hesabınız var mı? <a href="{{ url_for('auth.login') }}" class="text-decoration-none">Giriş Yap</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

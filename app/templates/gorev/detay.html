@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Görev Detayı - {{ gorev.baslik }} - Toplantı Takip Programı{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-tasks me-2"></i>{{ gorev.baslik }}
+        <span class="badge {% if gorev.durum == 'Tamamlandı' %}bg-success{% elif gorev.durum == 'Devam Ediyor' %}bg-warning{% else %}bg-primary{% endif %} ms-2">
+            {{ gorev.durum }}
+        </span>
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        {% if gorev.olusturan_kullanici_id == current_user.id %}
+            <div class="btn-group me-2">
+                <a href="{{ url_for('gorev.duzenle', id=gorev.id) }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-edit me-1"></i>Düzenle
+                </a>
+            </div>
+        {% endif %}
+        <a href="{{ url_for('gorev.liste') }}" class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-arrow-left me-1"></i>Görev Listesine Dön
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0"><i class="fas fa-info-circle me-2"></i>Görev Bilgileri</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4 fw-bold">Başlık:</div>
+                    <div class="col-md-8">{{ gorev.baslik }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 fw-bold">Açıklama:</div>
+                    <div class="col-md-8">{{ gorev.aciklama }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 fw-bold">Atanan Kişi:</div>
+                    <div class="col-md-8">{{ gorev.atanan_kullanici.ad }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 fw-bold">Oluşturan:</div>
+                    <div class="col-md-8">{{ gorev.olusturan_kullanici.ad }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 fw-bold">Son Teslim Tarihi:</div>
+                    <div class="col-md-8">{{ gorev.son_teslim_tarihi.strftime('%d.%m.%Y') }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 fw-bold">Durum:</div>
+                    <div class="col-md-8">
+                        <span class="badge {% if gorev.durum == 'Tamamlandı' %}bg-success{% elif gorev.durum == 'Devam Ediyor' %}bg-warning{% else %}bg-primary{% endif %}">
+                            {{ gorev.durum }}
+                        </span>
+                    </div>
+                </div>
+                {% if gorev.durum == 'Tamamlandı' and gorev.tamamlanma_zamani %}
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Tamamlanma Tarihi:</div>
+                        <div class="col-md-8">{{ gorev.tamamlanma_zamani.strftime('%d.%m.%Y %H:%M') }}</div>
+                    </div>
+                {% endif %}
+                {% if gorev.puan_degeri > 0 %}
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Puan Değeri:</div>
+                        <div class="col-md-8">
+                            <span class="badge bg-info">{{ gorev.puan_degeri }} Puan</span>
+                        </div>
+                    </div>
+                {% endif %}
+                {% if gorev.toplanti %}
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">İlgili Toplantı:</div>
+                        <div class="col-md-8">
+                            <a href="{{ url_for('toplanti.detay', id=gorev.toplanti.id) }}" class="text-decoration-none">
+                                {{ gorev.toplanti.baslik }}
+                                <i class="fas fa-external-link-alt ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+                {% if gorev.urun %}
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">İlgili Ürün:</div>
+                        <div class="col-md-8">
+                            <a href="{{ url_for('urun.detay', id=gorev.urun.id) }}" class="text-decoration-none">
+                                {{ gorev.urun.ad }}
+                                <i class="fas fa-external-link-alt ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-white">
+                {% if gorev.atanan_kullanici_id == current_user.id %}
+                    <form action="{{ url_for('gorev.durum_guncelle', id=gorev.id) }}" method="POST" class="d-flex">
+                        <select name="durum" class="form-select me-2">
+                            <option value="Yapılacak" {% if gorev.durum == 'Yapılacak' %}selected{% endif %}>Yapılacak</option>
+                            <option value="Devam Ediyor" {% if gorev.durum == 'Devam Ediyor' %}selected{% endif %}>Devam Ediyor</option>
+                            <option value="Tamamlandı" {% if gorev.durum == 'Tamamlandı' %}selected{% endif %}>Tamamlandı</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary">Durumu Güncelle</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0"><i class="fas fa-comments me-2"></i>Yorumlar</h5>
+            </div>
+            <div class="card-body">
+                <div class="comments-container" style="max-height: 400px; overflow-y: auto;">
+                    {% if yorumlar %}
+                        <div class="list-group list-group-flush">
+                            {% for yorum in yorumlar %}
+                                <div class="list-group-item px-0">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            {% if yorum.yazan_kullanici_profil_resmi %}
+                                                <img src="{{ yorum.yazan_kullanici_profil_resmi }}" alt="{{ yorum.yazan_kullanici_ad }}" class="rounded-circle me-2" width="32" height="32">
+                                            {% else %}
+                                                <div class="bg-secondary rounded-circle text-white d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                                    {{ yorum.yazan_kullanici_ad[0] }}
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <h6 class="mb-0">{{ yorum.yazan_kullanici_ad }}</h6>
+                                                <small class="text-muted">{{ yorum.olusturulma_zamani.strftime('%d.%m.%Y %H:%M') }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="mt-2 mb-0">{{ yorum.yorum }}</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mb-0">
+                            Bu görev için henüz yorum yapılmamıştır.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-footer bg-white">
+                <form action="{{ url_for('gorev.yorum_ekle', id=gorev.id) }}" method="POST">
+                    <div class="mb-3">
+                        <label for="yorum" class="form-label">Yeni Yorum</label>
+                        <textarea class="form-control" id="yorum" name="yorum" rows="3" required></textarea>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Yorum Ekle</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

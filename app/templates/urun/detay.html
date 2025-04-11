@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Ürün Detayı - {{ urun.ad }} - Toplantı Takip Programı{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-box me-2"></i>{{ urun.ad }}
+        <span class="badge {% if urun.durum == 'Aktif' %}bg-success{% else %}bg-secondary{% endif %} ms-2">
+            {{ urun.durum }}
+        </span>
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{{ url_for('urun.duzenle', id=urun.id) }}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-edit me-1"></i>Düzenle
+            </a>
+        </div>
+        <a href="{{ url_for('urun.liste') }}" class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-arrow-left me-1"></i>Ürün Listesine Dön
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0"><i class="fas fa-info-circle me-2"></i>Ürün Bilgileri</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4 fw-bold">Ürün Kodu:</div>
+                    <div class="col-md-8">{{ urun.kod }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 fw-bold">Ürün Adı:</div>
+                    <div class="col-md-8">{{ urun.ad }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 fw-bold">Kategori:</div>
+                    <div class="col-md-8">{{ urun.kategori.ad }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 fw-bold">Açıklama:</div>
+                    <div class="col-md-8">{{ urun.aciklama }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 fw-bold">Fiyat:</div>
+                    <div class="col-md-8">{{ urun.fiyat }} TL</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 fw-bold">Stok Miktarı:</div>
+                    <div class="col-md-8">{{ urun.stok_miktari }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 fw-bold">Durum:</div>
+                    <div class="col-md-8">
+                        <span class="badge {% if urun.durum == 'Aktif' %}bg-success{% else %}bg-secondary{% endif %}">
+                            {{ urun.durum }}
+                        </span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 fw-bold">Eklenme Tarihi:</div>
+                    <div class="col-md-8">{{ urun.olusturulma_zamani.strftime('%d.%m.%Y') }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 fw-bold">Son Güncelleme:</div>
+                    <div class="col-md-8">{{ urun.guncelleme_zamani.strftime('%d.%m.%Y %H:%M') }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0"><i class="fas fa-image me-2"></i>Ürün Görseli</h5>
+            </div>
+            <div class="card-body text-center">
+                {% if urun.gorsel_url %}
+                    <img src="{{ urun.gorsel_url }}" alt="{{ urun.ad }}" class="img-fluid rounded" style="max-height: 300px;">
+                {% else %}
+                    <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 300px;">
+                        <i class="fas fa-image fa-4x text-muted"></i>
+                    </div>
+                    <p class="text-muted mt-3">Bu ürün için görsel bulunmamaktadır.</p>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-white">
+                <form action="{{ url_for('urun.gorsel_yukle', id=urun.id) }}" method="POST" enctype="multipart/form-data">
+                    <div class="input-group">
+                        <input type="file" class="form-control" id="gorsel" name="gorsel" accept="image/*">
+                        <button class="btn btn-primary" type="submit">Yükle</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0"><i class="fas fa-tasks me-2"></i>İlgili Görevler</h5>
+                <a href="{{ url_for('gorev.yeni', urun_id=urun.id) }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-plus me-1"></i>Görev Oluştur
+                </a>
+            </div>
+            <div class="card-body">
+                {% if gorevler %}
+                    <div class="list-group">
+                        {% for gorev in gorevler %}
+                            <a href="{{ url_for('gorev.detay', id=gorev.id) }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">{{ gorev.baslik }}</h6>
+                                        <small class="text-muted">
+                                            <i class="fas fa-user me-1"></i>{{ gorev.atanan_kullanici.ad }}
+                                            <i class="fas fa-calendar-alt ms-2 me-1"></i>{{ gorev.son_teslim_tarihi.strftime('%d.%m.%Y') }}
+                                        </small>
+                                    </div>
+                                    <span class="badge {% if gorev.durum == 'Tamamlandı' %}bg-success{% elif gorev.durum == 'Devam Ediyor' %}bg-warning{% else %}bg-primary{% endif %}">
+                                        {{ gorev.durum }}
+                                    </span>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-info mb-0">
+                        Bu ürün için henüz görev oluşturulmamıştır.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0"><i class="fas fa-calendar-alt me-2"></i>İlgili Toplantılar</h5>
+            </div>
+            <div class="card-body">
+                {% if toplantilar %}
+                    <div class="list-group">
+                        {% for toplanti in toplantilar %}
+                            <a href="{{ url_for('toplanti.detay', id=toplanti.id) }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">{{ toplanti.baslik }}</h6>
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar-day me-1"></i>{{ toplanti.baslangic_zamani.strftime('%d.%m.%Y') }}
+                                            <i class="fas fa-clock ms-2 me-1"></i>{{ toplanti.baslangic_zamani.strftime('%H:%M') }} - {{ toplanti.bitis_zamani.strftime('%H:%M') }}
+                                        </small>
+                                    </div>
+                                    <span class="badge {% if toplanti.iptal_edildi %}bg-danger{% elif toplanti.baslangic_zamani > now %}bg-primary{% elif toplanti.bitis_zamani < now %}bg-success{% else %}bg-warning{% endif %}">
+                                        {% if toplanti.iptal_edildi %}
+                                            İptal Edildi
+                                        {% elif toplanti.baslangic_zamani > now %}
+                                            Planlandı
+                                        {% elif toplanti.bitis_zamani < now %}
+                                            Tamamlandı
+                                        {% else %}
+                                            Devam Ediyor
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-info mb-0">
+                        Bu ürün için henüz toplantı bulunmamaktadır.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
