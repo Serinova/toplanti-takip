@@ -1,42 +1,55 @@
 from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///gorevler.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+db = SQLAlchemy(app)
 
-gorevler = []
+class Gorev(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    baslik = db.Column(db.String(100))
+    aciklama = db.Column(db.String(200))
+    tamamlandi = db.Column(db.Boolean, default=False)
+
+with app.app_context():
+    db.create_all()
 
 @app.route("/api/gorevler", methods=["GET"])
-def gorevleri_listele():
-    return jsonify(gorevler)
+def listele():
+    return jsonify([{
+        "id": g.id,
+        "baslik": g.baslik,
+        "aciklama": g.aciklama,
+        "tamamlandi": g.tamamlandi
+    } for g in Gorev.query.all()])
 
 @app.route("/api/gorev-ekle", methods=["POST"])
-def gorev_ekle():
+def ekle():
     data = request.get_json()
-    yeni_gorev = {
-        "id": len(gorevler) + 1,
-        "baslik": data.get("baslik"),
-        "aciklama": data.get("aciklama"),
-        "tamamlandi": False
-    }
-    gorevler.append(yeni_gorev)
-    return jsonify({"durum": "eklendi", "gorev": yeni_gorev})
+    yeni = Gorev(baslik=data["baslik"], aciklama=data["aciklama"])
+    db.session.add(yeni)
+    db.session.commit()
+    return jsonify({"id": yeni.id})
 
-@app.route("/api/gorev-sil/<int:gorev_id>", methods=["DELETE"])
-def gorev_sil(gorev_id):
-    global gorevler
-    gorevler = [g for g in gorevler if g["id"] != gorev_id]
-    return jsonify({"durum": "silindi", "id": gorev_id})
+@app.route("/api/gorev-sil/<int:id>", methods=["DELETE"])
+def sil(id):
+    g = Gorev.query.get(id)
+    if g:
+        db.session.delete(g)
+        db.session.commit()
+        return jsonify({"durum": "silindi"})
+    return jsonify({"hata": "bulunamadı"})
 
-@app.route("/api/gorev-tamamla/<int:gorev_id>", methods=["PUT"])
-def gorev_tamamla(gorev_id):
-    for g in gorevler:
-        if g["id"] == gorev_id:
-            g["tamamlandi"] = not g["tamamlandi"]
-            return jsonify({"durum": "güncellendi", "gorev": g})
-    return jsonify({"hata": "görev bulunamadı"}), 404
+@app.route("/api/gorev-tamamla/<int:id>", methods=["PUT"])
+def tamamla(id):
+    g = Gorev.query.get(id)
+    if g:
+        g.tamamlandi = not g.tamamlandi
+        db.session.commit()
+        return jsonify({"durum": "güncellendi"})
+    return jsonify({"hata": "bulunamadı"})
 
 @app.route("/")
 def home():
-    return "Hello, Render!"
-
-if __name__ == "__main__":
-    app.run()
+    return "Görev Takip API (Veritabanlı)"
