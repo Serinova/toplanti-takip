@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Görev Listesi</title>
+</head>
+<body>
+  <h2>Görev Listesi</h2>
+  <ul id="gorevListesi"></ul>
+
+  <script>
+    async function gorevleriYukle() {
+      const response = await fetch("https://toplanti-takip.onrender.com/api/gorevler");
+      const gorevler = await response.json();
+
+      const liste = document.getElementById("gorevListesi");
+      liste.innerHTML = "";
+
+      gorevler.forEach(gorev => {
+        const item = document.createElement("li");
+        item.textContent = `#${gorev.id} - ${gorev.baslik} (${gorev.tamamlandi ? 'Tamamlandı' : 'Bekliyor'})`;
+        liste.appendChild(item);
+      });
+    }
+
+    gorevleriYukle();
+  </script>
+</body>
+</html>
