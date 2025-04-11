@@ -62,3 +62,116 @@
   </script>
 </body>
 </html>
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Toplantı Takip - Anasayfa</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f1f1f1;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+    }
+    form, .hazir-gorevler {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    input, button {
+      padding: 10px;
+      margin: 5px 0;
+      width: 100%;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    li {
+      background: white;
+      margin-bottom: 8px;
+      padding: 10px;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .hazir-gorevler button {
+      background-color: #0099cc;
+      color: white;
+      border: none;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Toplantı Takip Paneli</h1>
+
+  <form id="gorevForm">
+    <h3>Yeni Görev Ekle</h3>
+    <input type="text" id="baslik" placeholder="Görev Başlığı" required />
+    <input type="text" id="aciklama" placeholder="Açıklama" required />
+    <button type="submit">Görev Ekle</button>
+  </form>
+
+  <div class="hazir-gorevler">
+    <h3>Hazır Görevler</h3>
+    <button onclick="hazirGorevEkle('Toplantı planla', 'Pazartesi sabahı')">Toplantı Planla</button>
+    <button onclick="hazirGorevEkle('Sunumu hazırla', 'Cuma gününe kadar')">Sunumu Hazırla</button>
+    <button onclick="hazirGorevEkle('Müşteri ara', 'Proje hakkında bilgi ver')">Müşteri Ara</button>
+  </div>
+
+  <h3>Görev Listesi</h3>
+  <ul id="gorevListesi"></ul>
+
+  <script>
+    async function gorevleriYukle() {
+      const response = await fetch("https://toplanti-takip.onrender.com/api/gorevler");
+      const gorevler = await response.json();
+      const liste = document.getElementById("gorevListesi");
+      liste.innerHTML = "";
+
+      gorevler.forEach(gorev => {
+        const item = document.createElement("li");
+        item.textContent = `#${gorev.id} - ${gorev.baslik} (${gorev.tamamlandi ? 'Tamamlandı' : 'Bekliyor'})`;
+        liste.appendChild(item);
+      });
+    }
+
+    document.getElementById("gorevForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const baslik = document.getElementById("baslik").value;
+      const aciklama = document.getElementById("aciklama").value;
+
+      await fetch("https://toplanti-takip.onrender.com/api/gorev-ekle", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ baslik, aciklama })
+      });
+
+      document.getElementById("gorevForm").reset();
+      gorevleriYukle();
+    });
+
+    async function hazirGorevEkle(baslik, aciklama) {
+      await fetch("https://toplanti-takip.onrender.com/api/gorev-ekle", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ baslik, aciklama })
+      });
+      gorevleriYukle();
+    }
+
+    gorevleriYukle();
+  </script>
+</body>
+</html>
