@@ -1,15 +1,119 @@
-document.getElementById("toplantiForm").addEventListener("submit", async function(e) {
-  e.preventDefault();
-  const baslik = document.getElementById("toplantiBaslik").value;
-  const aciklama = document.getElementById("toplantiAciklama").value;
-  const tarih_saat = document.getElementById("toplantiTarih").value;
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Toplantı Takip Paneli</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; background: #f9f9f9; }
+    h1, h2 { text-align: center; }
+    form { background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 0 8px rgba(0,0,0,0.1); }
+    input, button { padding: 10px; margin: 5px 0; width: 100%; border-radius: 5px; border: 1px solid #ccc; }
+    ul { padding: 0; list-style-type: none; }
+    li {
+      background: #fff; padding: 10px; margin-bottom: 10px;
+      border-radius: 6px; box-shadow: 0 0 3px rgba(0,0,0,0.1);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .sil-btn { background: crimson; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Toplantı Takip Paneli</h1>
 
-  await fetch("https://toplanti-takip.onrender.com/api/toplanti-ekle", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ baslik, aciklama, tarih_saat })
-  });
+  <!-- Görev Ekleme Formu -->
+  <form id="gorevForm">
+    <h2>Görev Ekle</h2>
+    <input type="text" id="baslik" placeholder="Görev Başlığı" required />
+    <input type="text" id="aciklama" placeholder="Açıklama" required />
+    <button type="submit">Görev Ekle</button>
+  </form>
 
-  this.reset();
-  alert("Toplantı eklendi!");
-});
+  <!-- Toplantı Ekleme Formu -->
+  <form id="toplantiForm">
+    <h2>Toplantı Ekle</h2>
+    <input type="text" id="toplantiBaslik" placeholder="Toplantı Başlığı" required />
+    <input type="text" id="toplantiAciklama" placeholder="Açıklama" />
+    <input type="datetime-local" id="toplantiTarih" required />
+    <button type="submit">Toplantı Ekle</button>
+  </form>
+
+  <h2>Görev Listesi</h2>
+  <ul id="gorevListesi"></ul>
+
+  <script>
+    async function gorevleriYukle() {
+      const response = await fetch("https://toplanti-takip.onrender.com/api/gorevler");
+      const gorevler = await response.json();
+      const liste = document.getElementById("gorevListesi");
+      liste.innerHTML = "";
+
+      gorevler.forEach(gorev => {
+        const item = document.createElement("li");
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = gorev.tamamlandi;
+        checkbox.onchange = async () => {
+          await fetch(`https://toplanti-takip.onrender.com/api/gorev-tamamla/${gorev.id}`, {
+            method: "PUT"
+          });
+          gorevleriYukle();
+        };
+
+        const metin = document.createElement("span");
+        metin.textContent = `#${gorev.id} - ${gorev.baslik} (${gorev.tamamlandi ? 'Tamamlandı' : 'Bekliyor'})`;
+
+        const silBtn = document.createElement("button");
+        silBtn.textContent = "Sil";
+        silBtn.className = "sil-btn";
+        silBtn.onclick = async () => {
+          await fetch(`https://toplanti-takip.onrender.com/api/gorev-sil/${gorev.id}`, {
+            method: "DELETE"
+          });
+          gorevleriYukle();
+        };
+
+        item.appendChild(checkbox);
+        item.appendChild(metin);
+        item.appendChild(silBtn);
+        liste.appendChild(item);
+      });
+    }
+
+    // Görev Ekle
+    document.getElementById("gorevForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const baslik = document.getElementById("baslik").value;
+      const aciklama = document.getElementById("aciklama").value;
+
+      await fetch("https://toplanti-takip.onrender.com/api/gorev-ekle", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ baslik, aciklama })
+      });
+
+      this.reset();
+      gorevleriYukle();
+    });
+
+    // Toplantı Ekle
+    document.getElementById("toplantiForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const baslik = document.getElementById("toplantiBaslik").value;
+      const aciklama = document.getElementById("toplantiAciklama").value;
+      const tarih_saat = document.getElementById("toplantiTarih").value;
+
+      await fetch("https://toplanti-takip.onrender.com/api/toplanti-ekle", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ baslik, aciklama, tarih_saat })
+      });
+
+      this.reset();
+      alert("Toplantı başarıyla eklendi!");
+    });
+
+    gorevleriYukle();
+  </script>
+</body>
+</html>
