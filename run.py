@@ -83,3 +83,16 @@ def toplanti_listele():
         "aciklama": t.aciklama,
         "tarih_saat": t.tarih_saat
     } for t in toplantilar])
+
+with app.app_context():
+    db.create_all()
+
+# Görev Modeli varsa onun altına ekle
+class Toplanti(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    baslik = db.Column(db.String(100), nullable=False)
+    aciklama = db.Column(db.String(200))
+    tarih_saat = db.Column(db.String(50))  # ISO tarih/saat formatı tercih edilir
+
+with app.app_context():
+    db.create_all()
