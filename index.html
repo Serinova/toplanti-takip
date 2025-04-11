@@ -66,50 +66,30 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Toplantı Takip - Anasayfa</title>
+  <meta charset="UTF-8">
+  <title>Görev Paneli</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f1f1f1;
-      padding: 20px;
-      max-width: 600px;
-      margin: auto;
-    }
-    h1 {
-      color: #333;
-      text-align: center;
-    }
-    form, .hazir-gorevler {
-      background: white;
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-    }
-    input, button {
-      padding: 10px;
-      margin: 5px 0;
-      width: 100%;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    ul {
-      list-style-type: none;
-      padding: 0;
-    }
+    body { font-family: Arial; padding: 20px; max-width: 600px; margin: auto; background: #f9f9f9; }
+    h1, h2 { text-align: center; }
+    input, button { padding: 10px; margin: 5px 0; width: 100%; border-radius: 5px; }
+    ul { padding: 0; list-style: none; }
     li {
-      background: white;
-      margin-bottom: 8px;
+      background: #fff;
       padding: 10px;
-      border-radius: 6px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 8px;
+      border-radius: 5px;
+      box-shadow: 0 0 3px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    .hazir-gorevler button {
-      background-color: #0099cc;
+    .sil-btn {
+      background: crimson;
       color: white;
       border: none;
-      margin-bottom: 10px;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -117,20 +97,13 @@
   <h1>Toplantı Takip Paneli</h1>
 
   <form id="gorevForm">
-    <h3>Yeni Görev Ekle</h3>
+    <h2>Yeni Görev Ekle</h2>
     <input type="text" id="baslik" placeholder="Görev Başlığı" required />
     <input type="text" id="aciklama" placeholder="Açıklama" required />
     <button type="submit">Görev Ekle</button>
   </form>
 
-  <div class="hazir-gorevler">
-    <h3>Hazır Görevler</h3>
-    <button onclick="hazirGorevEkle('Toplantı planla', 'Pazartesi sabahı')">Toplantı Planla</button>
-    <button onclick="hazirGorevEkle('Sunumu hazırla', 'Cuma gününe kadar')">Sunumu Hazırla</button>
-    <button onclick="hazirGorevEkle('Müşteri ara', 'Proje hakkında bilgi ver')">Müşteri Ara</button>
-  </div>
-
-  <h3>Görev Listesi</h3>
+  <h2>Görev Listesi</h2>
   <ul id="gorevListesi"></ul>
 
   <script>
@@ -140,4 +113,39 @@
       const liste = document.getElementById("gorevListesi");
       liste.innerHTML = "";
 
-      
+      gorevler.forEach(gorev => {
+        const item = document.createElement("li");
+        item.innerHTML = `
+          <span>#${gorev.id} - ${gorev.baslik} (${gorev.tamamlandi ? 'Tamamlandı' : 'Bekliyor'})</span>
+          <button class="sil-btn" onclick="gorevSil(${gorev.id})">Sil</button>
+        `;
+        liste.appendChild(item);
+      });
+    }
+
+    async function gorevSil(id) {
+      await fetch(`https://toplanti-takip.onrender.com/api/gorev-sil/${id}`, {
+        method: "DELETE"
+      });
+      gorevleriYukle();
+    }
+
+    document.getElementById("gorevForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const baslik = document.getElementById("baslik").value;
+      const aciklama = document.getElementById("aciklama").value;
+
+      await fetch("https://toplanti-takip.onrender.com/api/gorev-ekle", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ baslik, aciklama })
+      });
+
+      this.reset();
+      gorevleriYukle();
+    });
+
+    gorevleriYukle();
+  </script>
+</body>
+</html>
