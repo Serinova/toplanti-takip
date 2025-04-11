@@ -73,3 +73,13 @@ def toplanti_ekle():
     db.session.add(yeni)
     db.session.commit()
     return jsonify({"durum": "toplanti eklendi", "id": yeni.id})
+
+@app.route("/api/toplantilar", methods=["GET"])
+def toplanti_listele():
+    toplantilar = Toplanti.query.order_by(Toplanti.tarih_saat).all()
+    return jsonify([{
+        "id": t.id,
+        "baslik": t.baslik,
+        "aciklama": t.aciklama,
+        "tarih_saat": t.tarih_saat
+    } for t in toplantilar])
