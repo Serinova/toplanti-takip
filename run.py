@@ -1,7 +1,3 @@
-from flask import Flask
-
-app = Flask(__name__)
-
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
@@ -23,3 +19,10 @@ def gorev_ekle():
     }
     gorevler.append(yeni_gorev)
     return jsonify({"durum": "eklendi", "gorev": yeni_gorev})
+
+@app.route("/")
+def home():
+    return "Hello, Render!"
+
+if __name__ == "__main__":
+    app.run()
