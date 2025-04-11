@@ -122,3 +122,19 @@
   <input type="datetime-local" id="toplantiTarih" required />
   <button type="submit">Toplantı Ekle</button>
 </form>
+
+document.getElementById("toplantiForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  const baslik = document.getElementById("toplantiBaslik").value;
+  const aciklama = document.getElementById("toplantiAciklama").value;
+  const tarih_saat = document.getElementById("toplantiTarih").value;
+
+  await fetch("https://toplanti-takip.onrender.com/api/toplanti-ekle", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ baslik, aciklama, tarih_saat })
+  });
+
+  this.reset();
+  alert("Toplantı eklendi!");
+});
