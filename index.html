@@ -28,11 +28,36 @@
       liste.innerHTML = "";
 
       gorevler.forEach(gorev => {
-        const item = document.createElement("li");
-        item.textContent = `#${gorev.id} - ${gorev.baslik} (${gorev.tamamlandi ? 'Tamamlandı' : 'Bekliyor'})`;
-        liste.appendChild(item);
-      });
-    }
+  const item = document.createElement("li");
+
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.checked = gorev.tamamlandi;
+  checkbox.onchange = async () => {
+    await fetch(`https://toplanti-takip.onrender.com/api/gorev-tamamla/${gorev.id}`, {
+      method: "PUT"
+    });
+    gorevleriYukle();
+  };
+
+  const metin = document.createElement("span");
+  metin.textContent = ` #${gorev.id} - ${gorev.baslik} (${gorev.tamamlandi ? 'Tamamlandı' : 'Bekliyor'})`;
+
+  const silBtn = document.createElement("button");
+  silBtn.textContent = "Sil";
+  silBtn.className = "sil-btn";
+  silBtn.onclick = async () => {
+    await fetch(`https://toplanti-takip.onrender.com/api/gorev-sil/${gorev.id}`, {
+      method: "DELETE"
+    });
+    gorevleriYukle();
+  };
+
+  item.appendChild(checkbox);
+  item.appendChild(metin);
+  item.appendChild(silBtn);
+  liste.appendChild(item);
+});
 
     document.getElementById("gorevForm").addEventListener("submit", async function(e) {
       e.preventDefault();
