@@ -2,96 +2,6 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>Görev Ekle ve Listele</title>
-</head>
-<body>
-  <h2>Görev Ekle</h2>
-  <form id="gorevForm">
-    <input type="text" id="baslik" placeholder="Görev Başlığı" required />
-    <input type="text" id="aciklama" placeholder="Açıklama" required />
-    <button type="submit">Görev Ekle</button>
-  </form>
-
-  <h3>Hazır Görevler</h3>
-  <button onclick="hazirGorevEkle('Toplantı planla', 'Pazartesi sabahı')">Toplantı planla</button>
-  <button onclick="hazirGorevEkle('Sunumu hazırla', 'Cuma'ya kadar tamamla')">Sunumu hazırla</button>
-  <button onclick="hazirGorevEkle('Rapor yaz', 'Haftalık performans raporu')">Rapor yaz</button>
-
-  <h2>Görev Listesi</h2>
-  <ul id="gorevListesi"></ul>
-
-  <script>
-    async function gorevleriYukle() {
-      const response = await fetch("https://toplanti-takip.onrender.com/api/gorevler");
-      const gorevler = await response.json();
-      const liste = document.getElementById("gorevListesi");
-      liste.innerHTML = "";
-
-      gorevler.forEach(gorev => {
-  const item = document.createElement("li");
-
-  const checkbox = document.createElement("input");
-  checkbox.type = "checkbox";
-  checkbox.checked = gorev.tamamlandi;
-  checkbox.onchange = async () => {
-    await fetch(`https://toplanti-takip.onrender.com/api/gorev-tamamla/${gorev.id}`, {
-      method: "PUT"
-    });
-    gorevleriYukle();
-  };
-
-  const metin = document.createElement("span");
-  metin.textContent = ` #${gorev.id} - ${gorev.baslik} (${gorev.tamamlandi ? 'Tamamlandı' : 'Bekliyor'})`;
-
-  const silBtn = document.createElement("button");
-  silBtn.textContent = "Sil";
-  silBtn.className = "sil-btn";
-  silBtn.onclick = async () => {
-    await fetch(`https://toplanti-takip.onrender.com/api/gorev-sil/${gorev.id}`, {
-      method: "DELETE"
-    });
-    gorevleriYukle();
-  };
-
-  item.appendChild(checkbox);
-  item.appendChild(metin);
-  item.appendChild(silBtn);
-  liste.appendChild(item);
-});
-
-    document.getElementById("gorevForm").addEventListener("submit", async function(e) {
-      e.preventDefault();
-      const baslik = document.getElementById("baslik").value;
-      const aciklama = document.getElementById("aciklama").value;
-
-      await fetch("https://toplanti-takip.onrender.com/api/gorev-ekle", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ baslik, aciklama })
-      });
-
-      document.getElementById("gorevForm").reset();
-      gorevleriYukle();
-    });
-
-    async function hazirGorevEkle(baslik, aciklama) {
-      await fetch("https://toplanti-takip.onrender.com/api/gorev-ekle", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ baslik, aciklama })
-      });
-      gorevleriYukle();
-    }
-
-    gorevleriYukle();
-  </script>
-</body>
-</html>
-
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8">
   <title>Görev Paneli</title>
   <style>
     body { font-family: Arial; padding: 20px; max-width: 600px; margin: auto; background: #f9f9f9; }
@@ -128,6 +38,11 @@
     <button type="submit">Görev Ekle</button>
   </form>
 
+  <h3>Hazır Görevler</h3>
+  <button onclick="hazirGorevEkle('Toplantı planla', 'Pazartesi sabahı')">Toplantı planla</button>
+  <button onclick="hazirGorevEkle('Sunumu hazırla', 'Cuma gününe kadar tamamla')">Sunumu hazırla</button>
+  <button onclick="hazirGorevEkle('Rapor yaz', 'Haftalık performans raporu')">Rapor yaz</button>
+
   <h2>Görev Listesi</h2>
   <ul id="gorevListesi"></ul>
 
@@ -140,17 +55,42 @@
 
       gorevler.forEach(gorev => {
         const item = document.createElement("li");
-        item.innerHTML = `
-          <span>#${gorev.id} - ${gorev.baslik} (${gorev.tamamlandi ? 'Tamamlandı' : 'Bekliyor'})</span>
-          <button class="sil-btn" onclick="gorevSil(${gorev.id})">Sil</button>
-        `;
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = gorev.tamamlandi;
+        checkbox.onchange = async () => {
+          await fetch(`https://toplanti-takip.onrender.com/api/gorev-tamamla/${gorev.id}`, {
+            method: "PUT"
+          });
+          gorevleriYukle();
+        };
+
+        const metin = document.createElement("span");
+        metin.textContent = ` #${gorev.id} - ${gorev.baslik} (${gorev.tamamlandi ? 'Tamamlandı' : 'Bekliyor'})`;
+
+        const silBtn = document.createElement("button");
+        silBtn.textContent = "Sil";
+        silBtn.className = "sil-btn";
+        silBtn.onclick = async () => {
+          await fetch(`https://toplanti-takip.onrender.com/api/gorev-sil/${gorev.id}`, {
+            method: "DELETE"
+          });
+          gorevleriYukle();
+        };
+
+        item.appendChild(checkbox);
+        item.appendChild(metin);
+        item.appendChild(silBtn);
         liste.appendChild(item);
       });
     }
 
-    async function gorevSil(id) {
-      await fetch(`https://toplanti-takip.onrender.com/api/gorev-sil/${id}`, {
-        method: "DELETE"
+    async function hazirGorevEkle(baslik, aciklama) {
+      await fetch("https://toplanti-takip.onrender.com/api/gorev-ekle", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ baslik, aciklama })
       });
       gorevleriYukle();
     }
