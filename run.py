@@ -62,3 +62,14 @@ class Toplanti(db.Model):
 
 with app.app_context():
     db.create_all()
+@app.route("/api/toplanti-ekle", methods=["POST"])
+def toplanti_ekle():
+    data = request.get_json()
+    yeni = Toplanti(
+        baslik=data.get("baslik"),
+        aciklama=data.get("aciklama"),
+        tarih_saat=data.get("tarih_saat")
+    )
+    db.session.add(yeni)
+    db.session.commit()
+    return jsonify({"durum": "toplanti eklendi", "id": yeni.id})
