@@ -34,3 +34,11 @@ def gorev_tamamla(gorev_id):
             g["tamamlandi"] = not g["tamamlandi"]
             return jsonify({"durum": "güncellendi", "gorev": g})
     return jsonify({"hata": "görev bulunamadı"}), 404
+
+@app.route("/api/gorev-tamamla/<int:gorev_id>", methods=["PUT"])
+def gorev_tamamla(gorev_id):
+    for g in gorevler:
+        if g["id"] == gorev_id:
+            g["tamamlandi"] = not g["tamamlandi"]
+            return jsonify({"durum": "güncellendi", "gorev": g})
+    return jsonify({"hata": "görev bulunamadı"}), 404
