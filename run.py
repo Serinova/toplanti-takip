@@ -53,3 +53,12 @@ def tamamla(id):
 @app.route("/")
 def home():
     return "Görev Takip API (Veritabanlı)"
+
+class Toplanti(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    baslik = db.Column(db.String(100), nullable=False)
+    aciklama = db.Column(db.String(200))
+    tarih_saat = db.Column(db.String(50))  # ISO tarih formatı beklenebilir
+
+with app.app_context():
+    db.create_all()
