@@ -3,4 +3,4 @@ cd "C:\Users\yusuf\toplanti-takip-flask"
 call venv\Scripts\activate.bat
 set FLASK_APP=run.py
 set FLASK_ENV=development
-flask run --host=0.0.0.0 --port=5000
+unicorn run --host=0.0.0.0 --port=5000
